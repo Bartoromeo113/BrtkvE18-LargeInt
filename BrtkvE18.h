@@ -858,7 +858,10 @@ public://==========================================
         {
             return *this;
         }
-
+        if (other == *this)
+        {
+            return BrtkvE18("1");
+        }
         BrtkvE18 Result("0");
         BrtkvE18 right(other);
         BrtkvE18 left(*this);
@@ -873,12 +876,13 @@ public://==========================================
         for(e18 i = 0; i < index_cyfry+1; i++){
         ink=0;
         while(left-right!=0){
+
+            left-=right;
+            ink++;
             if(left == right){
                 ink++;            
                 break;
-            }
-            left-=right;
-            ink++;            
+            }            
         }
         Result*=10;
         Result+=ink;
@@ -888,6 +892,12 @@ public://==========================================
         return Result;
     }
     BrtkvE18 operator/(e18 other) const {
+        if(other == 0) {
+            return *this;
+        }
+        if(*this<other) {
+            return BrtkvE18("0");
+        }
         return *this / BrtkvE18(std::to_string(other));
     }
     friend BrtkvE18 operator/(e18 left, const BrtkvE18& right) {
@@ -895,7 +905,7 @@ public://==========================================
         if(right==left) return BrtkvE18("1");
         return BrtkvE18(std::to_string(left / right.liczba[0]).c_str());
     }
-    BrtkvE18& operator%=(int mod)  {
+    BrtkvE18& operator%=(const int mod)  {
         if (mod == 0)
         {
             return *this;
@@ -912,6 +922,48 @@ public://==========================================
            wstawWartosc(std::to_string(resztov).c_str());
         return *this;
     }
+    
+    BrtkvE18 operator%=(const BrtkvE18 other)  {
+        if (*this == BrtkvE18("0"))
+        {
+            return *this;
+        }
+        if(*this == other){
+            wstawWartosc("0");
+            return *this;
+        }
+        if (other == 0)
+        {
+            return *this;
+        }
+
+        BrtkvE18 right(other);
+        
+        e18 index_cyfry = 0;
+        while(right*10 < *this){
+            right*=10;
+            index_cyfry++;
+
+        }
+       
+     
+        for(e18 i = 0; i < index_cyfry+1; i++){
+     
+        while(*this-right!=0){
+
+            *this-=right;
+            if(*this == right){        
+                *this = BrtkvE18("0");
+                return *this;
+            }
+        }
+        right/=10;
+        }
+        
+        return *this;
+
+    }
+    
     BrtkvE18 operator%(int mod) const {
         if (mod == 0)
         {
@@ -929,6 +981,121 @@ public://==========================================
            BrtkvE18 Result(std::to_string(resztov).c_str());
         return Result;
     }
+    BrtkvE18 operator%(const e18 other) const {
+        if (*this == BrtkvE18("0"))
+        {
+            return BrtkvE18("0");
+        }
+        if (other == BrtkvE18("0"))
+        {
+            return *this;
+        }
+        if (other == *this)
+        {
+            return BrtkvE18("1");
+        }
+
+        BrtkvE18 right(std::to_string(other));
+        BrtkvE18 left(*this);
+        e18 index_cyfry = 0;
+        while(right*10 < left){
+            right*=10;
+            index_cyfry++;
+
+        }
+       
+        
+        for(e18 i = 0; i < index_cyfry+1; i++){
+       
+        while(left-right!=0){
+            left-=right;
+            if(left == right){               
+                BrtkvE18 Result("0");
+                return Result;
+            }   
+        }
+        right/=10;
+        }
+        
+        return left;
+    }
+    BrtkvE18 operator%(const BrtkvE18 other) const {
+        if (*this == BrtkvE18("0"))
+        {
+            return BrtkvE18("0");
+        }
+        if (other == BrtkvE18("0"))
+        {
+            return *this;
+        }
+        if (other == *this)
+        {
+            return BrtkvE18("1");
+        }
+
+        BrtkvE18 right(other);
+        BrtkvE18 left(*this);
+        e18 index_cyfry = 0;
+        while(right*10 < left){
+            right*=10;
+            index_cyfry++;
+
+        }
+       
+        
+        for(e18 i = 0; i < index_cyfry+1; i++){
+       
+        while(left-right!=0){
+            left-=right;
+            if(left == right){               
+                BrtkvE18 Result("0");
+                return Result;
+            }   
+        }
+        right/=10;
+        }
+        
+        return left;
+    }
+    friend BrtkvE18 operator%(const unsigned long long _left, const BrtkvE18 _right)  {
+        if (_left == BrtkvE18("0"))
+        {
+            return BrtkvE18("0");
+        }
+        if (_right == BrtkvE18("0"))
+        {
+            return BrtkvE18(std::to_string(_left));
+        }
+        if (_left == _right)
+        {
+            return BrtkvE18("0");
+        }
+
+        BrtkvE18 right(_right);
+        BrtkvE18 left(_left);
+        e18 index_cyfry = 0;
+        while(right*10 < left){
+            right*=10;
+            index_cyfry++;
+
+        }
+       
+        
+        for(e18 i = 0; i < index_cyfry+1; i++){
+       
+        while(left-right!=0){
+            left-=right;
+            if(left == right){               
+                BrtkvE18 Result("0");
+                return Result;
+            }   
+        }
+        right/=10;
+        }
+        
+        return left;
+    }
+    
     static BrtkvE18 pow(const BrtkvE18 left, const BrtkvE18 right){
         if(right == 0) return BrtkvE18("1");
         if(left == 0) return BrtkvE18("0");
@@ -937,10 +1104,7 @@ public://==========================================
         BrtkvE18 Potegov(left);
 
         while(right2!=0){
-
-
             if(right2%2==1){
-
                 Result=Result*Potegov;
             }
             Potegov=Potegov*Potegov;
@@ -1030,7 +1194,25 @@ public://==========================================
         }
         return Result;
     }
-////// dzielenie, pierwiastkowanie, iteracja,
+    static BrtkvE18 sqrt(const BrtkvE18& other) {
+        if(other == 0) return BrtkvE18("0");
+        if(other == 1) return BrtkvE18("1");
+
+        int length = other.zwrocDlugoscLiczby()/2;
+
+        BrtkvE18 N0(other);
+
+        bool stat;
+        for(int i = 0; i < length; i++){
+            N0/=10;
+        }
+        for(int i = 0; i < length+1; i++){
+        stat = ((N0*N0-other)==0);
+           N0 = (stat)?(N0 + ((stat)?(other-N0*N0):(N0*N0-other))/(2*N0)):(N0 - ((stat)?(other-N0*N0):(N0*N0-other))/(2*N0));    
+        }
+        return N0;
+    }
+//////  pierwiastkowanie2, pierwiastkowanie3, silnia,
     bool operator<(const BrtkvE18& other)const {
         if(rozmiar == other.rozmiar){
             for(int i = rozmiar -1; i > -1; i--){
